@@ -4,7 +4,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const Agent = require('socks5-https-client/lib/Agent')
 const { getPaymentHistory } = require('./qiwi');
 
-const { home } = require('./actions');
+const { home, shop, products } = require('./actions');
 
 
 // Create a bot that uses 'polling' to fetch new updates
@@ -39,30 +39,46 @@ bot.onText(/\/shop/, (msg, match) => {
 
 });
 
-bot.onText(/\/payments/, async (msg, match) => {
-    try {
-        const payments = await getPaymentHistory();
-        let resultString = '';
-        payments.data.forEach(p => {
-            resultString += `Номер: ${p.personId}, Пополнение или перевод: ${p.type}, Статус: ${p.statusText}, Сумма: ${p.sum.amount} ${p.sum.currency}`;
-            resultString += '\n';
-        })
+// bot.onText(/\/payments/, async (msg, match) => {
+//     try {
+//         const payments = await getPaymentHistory();
+//         let resultString = '';
+//         payments.data.forEach(p => {
+//             resultString += `Номер: ${p.personId}, Пополнение или перевод: ${p.type}, Статус: ${p.statusText}, Сумма: ${p.sum.amount} ${p.sum.currency}`;
+//             resultString += '\n';
+//         })
 
-        const chatId = msg.chat.id;
+//         const chatId = msg.chat.id;
 
-        bot.sendMessage(chatId, resultString);
-    } catch (e) {
-        console.error(e);
-        // I am not gonna handle it L.O.L.
-    }
+//         bot.sendMessage(chatId, resultString);
+//     } catch (e) {
+//         console.error(e);
+//         // I am not gonna handle it L.O.L.
+//     }
 
 
-});
+// });
 
 bot.on('callback_query', (msg) => {
-    console.log(msg);
-    switch (msg.data) {
-        case 'home':
-            home(bot, msg);
+    console.log(msg.data);
+    if (msg.data == 'home') {
+        home(bot, msg);
+    } else if (msg.data == 'shop') {
+        shop(bot, msg);
+    } else if (msg.data.match(/category_.+/)) {
+        products(bot, msg);
     }
-})
+
+
+    // switch (msg.data) {
+    //     case /home/.test(msg.data):
+    //         home(bot, msg);
+    //         break;
+    //     case /shop/.test(msg.data):
+    //         shop(bot, msg);
+    //         break;
+    //     case /category-[1-9]+/.test(msg.data):
+    //         products(bot, msg);
+    //         break;
+    // }
+});
