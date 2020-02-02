@@ -2,9 +2,8 @@ require('dotenv').config();
 
 const TelegramBot = require('node-telegram-bot-api');
 const Agent = require('socks5-https-client/lib/Agent')
-const { getPaymentHistory } = require('./qiwi');
 
-const { home, shop, products } = require('./actions');
+const { home, shop, products, product } = require('./actions');
 
 
 // Create a bot that uses 'polling' to fetch new updates
@@ -34,31 +33,6 @@ bot.onText(/\/help/, (msg, match) => {
     bot.sendMessage(chatId, helpString);
 })
 
-bot.onText(/\/shop/, (msg, match) => {
-    const chatId = msg.chat.id;
-
-});
-
-// bot.onText(/\/payments/, async (msg, match) => {
-//     try {
-//         const payments = await getPaymentHistory();
-//         let resultString = '';
-//         payments.data.forEach(p => {
-//             resultString += `Номер: ${p.personId}, Пополнение или перевод: ${p.type}, Статус: ${p.statusText}, Сумма: ${p.sum.amount} ${p.sum.currency}`;
-//             resultString += '\n';
-//         })
-
-//         const chatId = msg.chat.id;
-
-//         bot.sendMessage(chatId, resultString);
-//     } catch (e) {
-//         console.error(e);
-//         // I am not gonna handle it L.O.L.
-//     }
-
-
-// });
-
 bot.on('callback_query', (msg) => {
     console.log(msg.data);
     if (msg.data == 'home') {
@@ -67,6 +41,8 @@ bot.on('callback_query', (msg) => {
         shop(bot, msg);
     } else if (msg.data.match(/category_.+/)) {
         products(bot, msg);
+    } else if (msg.data.match(/product_.+/)) {
+        product(bot, msg);
     }
 
 

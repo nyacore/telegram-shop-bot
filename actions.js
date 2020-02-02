@@ -1,4 +1,4 @@
-const { getProducts, getCategories } = require('./api');
+const { getProducts, getCategories, getProduct } = require('./api');
 
 function home(bot, { message }) {
     bot.sendMessage(message.chat.id, 'Выберите действие', {
@@ -14,10 +14,10 @@ function home(bot, { message }) {
 }
 
 async function shop(bot, { message }) {
-    const categories = (await getCategories()).map((c) => {
+    const categories = (await getCategories()).data.categories.map((c) => {
         return [{
             text: c.name,
-            callback_data: `category_${c._id}`
+            callback_data: `category_${c.id}`
         }];
     });
 
@@ -36,10 +36,10 @@ async function shop(bot, { message }) {
 
 async function products(bot, { message, data }) {
     const categoryId = data.split('_')[1];
-    const products = (await getProducts(categoryId)).map((p) => {
+    const products = (await getProducts(categoryId)).data.products.map((p) => {
         return [{
             text: p.name,
-            callback_data: `product_${p._id}`
+            callback_data: `product_${p.id}`
         }];
     });
 
@@ -56,8 +56,27 @@ async function products(bot, { message, data }) {
     });
 }
 
+async function product(bot, { message, data }) {
+    const productId = data.split('_')[1];
+    const product = (await getProduct(productId)).data.product;
+
+    bot.sendMessage(message.chat.id, `${product.name}
+    Цена: ${product.price}Р,
+    Описание: ${product.description}`, {
+        reply_markup: {
+            inline_keyboard: [
+                [{
+                    text: 'Назад',
+                    callback_data: `category_${product.category.id}`
+                }]
+            ]
+        }
+    });
+}
+
 module.exports = {
     home,
     shop,
-    products
+    products,
+    product
 }
